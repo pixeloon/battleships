@@ -1,0 +1,27 @@
+body {
+  margin: 20px
+}
+
+.container {
+  width: 800px;
+  background-color: yellow;
+}
+
+.maingrid {
+  width: 550px;
+  height: 550px;
+  float: left;
+
+}
+
+.instructions {
+  float: right;
+  background-color: lightgray;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.A div, .B div, .C div, .D div {
+  display: inline;
+  border:1px solid black;
+}
