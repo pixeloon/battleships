@@ -20,6 +20,14 @@ io.on('connection', function(socket) {
             io.emit("start game", game);
         }
     });
+
+    socket.on("ships submitted", (ships, player) => {
+        playerAtIndex = game.findIndex(val => val.player === player);
+        game[playerAtIndex].deployment = ships;
+        console.log("Game: " + JSON.stringify(game));
+
+    });
+
 });
 
 // eval(locus);

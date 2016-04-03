@@ -3,11 +3,11 @@ $(function() {
     var socket = io(); // initiate handshake
     var player = "";
     var ships = [];
-    var A = { location: [] };
-    var B = { location: [] };
-    var C = { location: [] };
-    var D1 = { location: [] };
-    var D2 = { location: [] };
+    var A = { aircraftcarrier: [] };
+    var B = { battleship: [] };
+    var C = { cruiser: [] };
+    var D1 = { destroyer1: [] };
+    var D2 = { destroyer2: [] };
 
 
 
@@ -31,9 +31,20 @@ $(function() {
         var selection = document.querySelectorAll('#tile');
         // debugger
         Array.prototype.slice.call(selection).forEach(el => {
-            el.removeEventListener("click", clickHandler);
-            // ships.push(el.value);
+            el.removeEventListener("click", clickHandler);      
         });
+        ships.push(A);
+        // console.log(JSON.stringify(A));
+        ships.push(B);
+        // console.log(JSON.stringify(B));
+        ships.push(C);
+        // console.log(JSON.stringify(C));
+        ships.push(D1);
+        // console.log(JSON.stringify(D1));
+        ships.push(D2);
+        // console.log(JSON.stringify(D2));
+        socket.emit("ships submitted",ships, player);
+        console.log(JSON.stringify(ships));
     });
 
 
@@ -100,8 +111,8 @@ $(function() {
         if ($('#aircraftcarrier').is(':checked')) {
             $(e.target).text("A");
             location = $(e.target).attr("data-location");
-            if (A.location.length < 5) {
-                A.location.push(location);
+            if (A.aircraftcarrier.length < 5) {
+                A.aircraftcarrier.push(location);
             } else {
                 $(e.target).text("");
                 alert("Aircraft Carrier is deployed. Select a different ship, or click submit.");
@@ -110,8 +121,8 @@ $(function() {
         if ($('#battleship').is(':checked')) {
             $(e.target).text("B");
             location = $(e.target).attr("data-location");
-            if (B.location.length < 4) {
-                B.location.push(location);
+            if (B.battleship.length < 4) {
+                B.battleship.push(location);
             } else {
                 $(e.target).text("");
                 alert("Battleship is deployed. Select a different ship, or click submit.");
@@ -120,8 +131,8 @@ $(function() {
         if ($('#cruiser').is(':checked')) {
             $(e.target).text("C");
             location = $(e.target).attr("data-location");
-            if (C.location.length < 3) {
-                C.location.push(location);
+            if (C.cruiser.length < 3) {
+                C.cruiser.push(location);
             } else {
                 $(e.target).text("");
                 alert("Cruiser is deployed. Select a different ship, or click submit.");
@@ -130,8 +141,8 @@ $(function() {
         if ($('#destroyer1').is(':checked')) {
             $(e.target).text("D");
             location = $(e.target).attr("data-location");
-            if (D1.location.length < 2) {
-                D1.location.push(location);
+            if (D1.destroyer1.length < 2) {
+                D1.destroyer1.push(location);
             } else {
                 $(e.target).text("");
                 alert("Destroyer 1 is deployed. Select a different ship, or click submit.");
@@ -140,16 +151,17 @@ $(function() {
         if ($('#destroyer2').is(':checked')) {
             $(e.target).text("D");
             location = $(e.target).attr("data-location");
-            if (D2.location.length < 2) {
-                D2.location.push(location);
+            if (D2.destroyer2.length < 2) {
+                D2.destroyer2.push(location);
             } else {
                 $(e.target).text("");
                 alert("Destroyer 2 is deployed. Select a different ship, or click submit.");
             }
         }
 
-        console.log("Location: " + $(e.target).attr("data-location"));
-        console.log("Ships: " + JSON.stringify(A) + JSON.stringify(B) + JSON.stringify(C) + JSON.stringify(D1) + JSON.stringify(D2));
+        // console.log("Location: " + $(e.target).attr("data-location"));
+        // console.log("Individual ships: " + JSON.stringify(A) + JSON.stringify(B) + JSON.stringify(C) + JSON.stringify(D1) + JSON.stringify(D2));
+        // console.log("Ships Array: " + JSON.stringify(ships));
         this.removeEventListener("click", clickHandler);
     }
 
