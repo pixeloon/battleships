@@ -5,12 +5,14 @@ body {
 .container {
   width: 800px;
   background-color: yellow;
+  padding: 10px;
 }
 
 .maingrid {
   width: 550px;
   height: 550px;
   float: left;
+  text-align: center;
 
 }
 
