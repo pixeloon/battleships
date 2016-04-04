@@ -2,49 +2,76 @@ $(function() {
     console.log("sanity check");
     var socket = io(); // initiate handshake
     var player = "";
+    var $tiles;
     var ships = [];
-    var A = { aircraftcarrier: [] };
-    var B = { battleship: [] };
-    var C = { cruiser: [] };
-    var D1 = { destroyer1: [] };
-    var D2 = { destroyer2: [] };
+    var A = [];
+    var B = [];
+    var C = [];
+    var D1 = [];
+    var D2 = [];
+    var myTurn = false;
+    var attempt = "";
 
 
-
-
-
-
+    // player sign-on
     $(".start").on('click', () => {
         player = prompt("Please enter your name");
         $(".start").text("Hello " + player + "!  Once a second player has joined, the game starts.");
         socket.emit("player joined", player);
     });
 
+    // determine start of game
     socket.on("start game", game => {
         $(".start").text("Players: " + game[0].player + " and " + game[1].player);
         $(".messages").text("To place your ships, select the right number of tiles, enter the matching letters and click submit.");
         $(".selection").append("<button type='submit' disable>Submit Ships</button");
         drawGrid();
     });
-
+    // Submitting ship selection
     $(".selection").on('click', () => {
-        var selection = document.querySelectorAll('#tile');
+        $tiles = document.querySelectorAll('.tile');
         // debugger
-        Array.prototype.slice.call(selection).forEach(el => {
-            el.removeEventListener("click", clickHandler);      
+        Array.prototype.slice.call($tiles).forEach(el => {
+            el.removeEventListener("click", clickHandler);
         });
         ships.push(A);
-        // console.log(JSON.stringify(A));
         ships.push(B);
-        // console.log(JSON.stringify(B));
         ships.push(C);
-        // console.log(JSON.stringify(C));
         ships.push(D1);
-        // console.log(JSON.stringify(D1));
         ships.push(D2);
-        // console.log(JSON.stringify(D2));
-        socket.emit("ships submitted",ships, player);
-        console.log(JSON.stringify(ships));
+
+        ships = flatten(ships);
+
+
+        console.log("Ships:" + ships + " at an index " + ships[1]);
+        socket.emit("ships submitted", ships, player);
+        $('.selection').empty();
+        $('.messages').empty();
+    });
+
+    // Player 1's turn
+    socket.on('turn player1', game => {
+        if (game[0].player === player) {
+            myTurn = true;
+            // check "hits" if there was a successful hit
+            console.log("Hits on Player 2:" + game[1].hits);
+            if (game[1].hits !== undefined) {
+                // debugger
+                game[1].hits.forEach(el => {
+                    // format as CSS id
+                    el = "#" + el;
+                    $(el).css("background", "green");
+                });
+            }
+
+            Array.prototype.slice.call($tiles).forEach(el => {
+                el.addEventListener("dblclick", dblclickHandler);
+            });
+
+            $(".messages").text("Your turn. Double-click to hit.");
+            // $('tile').on("dblclick", dblclickHandler);
+        }
+
     });
 
 
@@ -70,13 +97,12 @@ $(function() {
                 tile.style.backgroundColor = ("lightgray");
             }
             tile.addEventListener("click", clickHandler);
-            tile.addEventListener("dblclick", dblclickHandler);
-            tile.setAttribute("id", "tile");
+            tile.classList.add("tile");
             $('.maingrid').append(tile);
 
             if ((i < 12) || (i % 11 === 0)) {
                 tile.style.backgroundColor = ("#FFF");
-                tile.removeAttribute("id", "tile");
+                tile.classList.remove("tile");
                 tile.removeEventListener("click", clickHandler);
                 if ((i > 0) && (i < 11)) {
                     colCount++;
@@ -89,7 +115,8 @@ $(function() {
                 }
             }
         }
-        tiles = document.querySelectorAll('#tile');
+
+        tiles = document.querySelectorAll('.tile');
         Array.prototype.slice.call(tiles).forEach((el) => {
             if (counter === 10) {
                 // go to next letter
@@ -99,7 +126,7 @@ $(function() {
             }
             row = arrLocation[rowCounter];
             col = counter + 1;
-            el.setAttribute('data-location', row + col);
+            el.setAttribute('id', row + col);
             counter++;
         });
     }
@@ -110,9 +137,9 @@ $(function() {
 
         if ($('#aircraftcarrier').is(':checked')) {
             $(e.target).text("A");
-            location = $(e.target).attr("data-location");
-            if (A.aircraftcarrier.length < 5) {
-                A.aircraftcarrier.push(location);
+            location = $(e.target).attr("id");
+            if (A.length < 5) {
+                A.push(location);
             } else {
                 $(e.target).text("");
                 alert("Aircraft Carrier is deployed. Select a different ship, or click submit.");
@@ -120,9 +147,9 @@ $(function() {
         }
         if ($('#battleship').is(':checked')) {
             $(e.target).text("B");
-            location = $(e.target).attr("data-location");
-            if (B.battleship.length < 4) {
-                B.battleship.push(location);
+            location = $(e.target).attr("id");
+            if (B.length < 4) {
+                B.push(location);
             } else {
                 $(e.target).text("");
                 alert("Battleship is deployed. Select a different ship, or click submit.");
@@ -130,9 +157,9 @@ $(function() {
         }
         if ($('#cruiser').is(':checked')) {
             $(e.target).text("C");
-            location = $(e.target).attr("data-location");
-            if (C.cruiser.length < 3) {
-                C.cruiser.push(location);
+            location = $(e.target).attr("id");
+            if (C.length < 3) {
+                C.push(location);
             } else {
                 $(e.target).text("");
                 alert("Cruiser is deployed. Select a different ship, or click submit.");
@@ -140,9 +167,9 @@ $(function() {
         }
         if ($('#destroyer1').is(':checked')) {
             $(e.target).text("D");
-            location = $(e.target).attr("data-location");
-            if (D1.destroyer1.length < 2) {
-                D1.destroyer1.push(location);
+            location = $(e.target).attr("id");
+            if (D1.length < 2) {
+                D1.push(location);
             } else {
                 $(e.target).text("");
                 alert("Destroyer 1 is deployed. Select a different ship, or click submit.");
@@ -150,23 +177,36 @@ $(function() {
         }
         if ($('#destroyer2').is(':checked')) {
             $(e.target).text("D");
-            location = $(e.target).attr("data-location");
-            if (D2.destroyer2.length < 2) {
-                D2.destroyer2.push(location);
+            if (D2.length < 2) {
+                D2.push(location);
             } else {
                 $(e.target).text("");
                 alert("Destroyer 2 is deployed. Select a different ship, or click submit.");
             }
         }
 
-        // console.log("Location: " + $(e.target).attr("data-location"));
-        // console.log("Individual ships: " + JSON.stringify(A) + JSON.stringify(B) + JSON.stringify(C) + JSON.stringify(D1) + JSON.stringify(D2));
-        // console.log("Ships Array: " + JSON.stringify(ships));
         this.removeEventListener("click", clickHandler);
     }
 
     function dblclickHandler(e) {
-        $(e.target).css("background", "red");
+
+        if (myTurn === true) {
+            $(e.target).attr('data-status', "hit");
+            attempt = $(e.target).attr('id');
+
+            console.log("Attempt from clickHandler: " + attempt + ". Type: " + typeof attempt);
+            socket.emit('attempt player1', attempt, player);
+            myTurn = false;
+            Array.prototype.slice.call($tiles).forEach(el => {
+                el.removeEventListener("dblclick", dblclickHandler);
+            });
+        }
+    }
+
+    function flatten(arr) {
+        return arr.reduce(function(start, next) {
+            return start.concat(next);
+        }, []);
     }
 
 });
