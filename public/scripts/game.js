@@ -51,6 +51,7 @@ $(function() {
 
     // Player 1's turn
     socket.on('turn player1', game => {
+        // if player 1
         if (game[0].player === player) {
             myTurn = true;
             // check "hits" if there was a successful hit
@@ -65,12 +66,81 @@ $(function() {
             }
 
             Array.prototype.slice.call($tiles).forEach(el => {
-                el.addEventListener("dblclick", dblclickHandler);
+                el.addEventListener("dblclick", dblclickHandler1);
             });
 
             $(".messages").text("Your turn. Double-click to hit.");
-            // $('tile').on("dblclick", dblclickHandler);
+        } else {
+            // if player 2
+            if (game[1].hits !== undefined) {
+                game[1].hits.forEach(el => {
+                    // format as CSS id
+                    el = "#" + el;
+                    $(el).css("background", "red");
+                });
+            }
         }
+
+    });
+
+    // Player 2's turn
+    socket.on('turn player2', game => {
+        // if player 1
+        if (game[1].player === player) {
+            myTurn = true;
+            // check "hits" if there was a successful hit
+            if (game[0].hits !== undefined) {
+                // debugger
+                game[0].hits.forEach(el => {
+                    // format as CSS id
+                    el = "#" + el;
+                    $(el).css("background", "green");
+                });
+            }
+
+            Array.prototype.slice.call($tiles).forEach(el => {
+                el.addEventListener("dblclick", dblclickHandler2);
+            });
+
+            $(".messages").text("Your turn. Double-click to hit.");
+        } else {
+            // if player 1
+            if (game[0].hits !== undefined) {
+                game[0].hits.forEach(el => {
+                    // format as CSS id
+                    el = "#" + el;
+                    $(el).css("background", "red");
+                });
+            }
+        }
+
+    });
+
+    socket.on("fail player1", (game, attemptdata) => {
+        if (game[0].player === player) {
+            myTurn = false;
+            attemptdata = "#" + attemptdata;
+            $(attemptdata).css("background", "orange");
+        } else if (game[1].player === player) {
+            $(attemptdata).css("background", "blue");
+        }
+
+        socket.emit("end player1");
+        $("messages").text("Player 2's Turn");
+
+    });
+
+    socket.on("fail player2", (game, attemptdata) => {
+        if (game[1].player === player) {
+            myTurn = false;
+            attemptdata = "#" + attemptdata;
+            $(attemptdata).css("background", "orange");
+        } else if (game[0].player === player) {
+            $(attemptdata).css("background", "blue");
+        }
+
+        socket.emit("end player2");
+        $("messages").text("Player 1's Turn");
 
     });
 
@@ -177,6 +247,7 @@ $(function() {
         }
         if ($('#destroyer2').is(':checked')) {
             $(e.target).text("D");
+            location = $(e.target).attr("id");
             if (D2.length < 2) {
                 D2.push(location);
             } else {
@@ -188,7 +259,7 @@ $(function() {
         this.removeEventListener("click", clickHandler);
     }
 
-    function dblclickHandler(e) {
+    function dblclickHandler1(e) {
 
         if (myTurn === true) {
             $(e.target).attr('data-status', "hit");
@@ -198,7 +269,23 @@ $(function() {
             socket.emit('attempt player1', attempt, player);
             myTurn = false;
             Array.prototype.slice.call($tiles).forEach(el => {
-                el.removeEventListener("dblclick", dblclickHandler);
+                el.removeEventListener("dblclick", dblclickHandler1);
+            });
+        }
+    }
+
+
+    function dblclickHandler2(e) {
+
+        if (myTurn === true) {
+            $(e.target).attr('data-status', "hit");
+            attempt = $(e.target).attr('id');
+
+            console.log("Attempt from clickHandler: " + attempt + ". Type: " + typeof attempt);
+            socket.emit('attempt player2', attempt, player);
+            myTurn = false;
+            Array.prototype.slice.call($tiles).forEach(el => {
+                el.removeEventListener("dblclick", dblclickHandler2);
             });
         }
     }

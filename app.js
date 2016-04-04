@@ -3,7 +3,9 @@ var app = express();
 var locus = require("locus");
 var player1, player2;
 var player1Hits = [];
+var player1Fails = [];
 var player2Hits = [];
+var player2Fails = [];
 
 
 var server = require('http').Server(app);
@@ -41,8 +43,35 @@ io.on('connection', function(socket) {
             game[1].deployment.splice(hitAtIndex, 1);
             game[1].hits = player2Hits;
             io.emit("turn player1", game);
+        } else {
+            player1Fails.push(attemptdata);
+            io.emit("fail player1", game, attemptdata);
         }
 
+    });
+
+    socket.on("attempt player2", (attemptdata) => {
+        hitAtIndex = game[0].deployment.findIndex(val => val === attemptdata);
+        console.log("Server side attempt: " + attemptdata + " Hit index: " + hitAtIndex);
+        if (hitAtIndex !== -1) {
+            player1Hits.push(attemptdata);
+            // debugger
+            game[0].deployment.splice(hitAtIndex, 1);
+            game[0].hits = player2Hits;
+            io.emit("turn player2", game);
+        } else {
+            player2Fails.push(attemptdata);
+            io.emit("fail player2", game, attemptdata);
+        }
+
+    });
+
+    socket.on("end player1", () => {
+        io.emit("turn player2", game);
+    });
+
+    socket.on("end player2", () => {
+        io.emit("turn player1", game);
     });
 
 });
