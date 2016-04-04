@@ -16,6 +16,11 @@ body {
 
 }
 
+.messages {
+  font-weight: bold;
+  font-size: 2em;
+}
+
 .instructions {
   float: right;
   background-color: lightgray;

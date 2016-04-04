@@ -23,8 +23,8 @@ $(function() {
     // determine start of game
     socket.on("start game", game => {
         $(".start").text("Players: " + game[0].player + " and " + game[1].player);
-        $(".messages").text("To place your ships, select the right number of tiles, enter the matching letters and click submit.");
-        $(".selection").append("<button type='submit' disable>Submit Ships</button");
+        $(".messages").text("To place your ships, first select the right number of tiles, enter the matching letters and then click submit.");
+        $(".selection").append("<button type='submit' class='btn btn-danger'>Submit Ships</button");
         drawGrid();
     });
     // Submitting ship selection
