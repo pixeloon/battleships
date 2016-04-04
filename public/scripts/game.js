@@ -51,6 +51,7 @@ $(function() {
 
     // Player 1's turn
     socket.on('turn player1', game => {
+
         // if player 1
         if (game[0].player === player) {
             myTurn = true;
@@ -121,12 +122,10 @@ $(function() {
             myTurn = false;
             attemptdata = "#" + attemptdata;
             $(attemptdata).css("background", "orange");
-        } else if (game[1].player === player) {
-            $(attemptdata).css("background", "blue");
-        }
+        } 
 
-        socket.emit("end player1");
-        $("messages").text("Player 2's Turn");
+        $(".messages").text("Player 2's Turn");
+        socket.emit("end player1",attemptdata);
 
     });
 
@@ -135,12 +134,10 @@ $(function() {
             myTurn = false;
             attemptdata = "#" + attemptdata;
             $(attemptdata).css("background", "orange");
-        } else if (game[0].player === player) {
-            $(attemptdata).css("background", "blue");
-        }
+        } 
 
-        socket.emit("end player2");
-        $("messages").text("Player 1's Turn");
+        $(".messages").text("Player 1's Turn");
+        socket.emit("end player2",attemptdata);
 
     });
 

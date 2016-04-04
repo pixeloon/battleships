@@ -39,9 +39,9 @@ io.on('connection', function(socket) {
         console.log("Server side attempt: " + attemptdata + " Hit index: " + hitAtIndex);
         if (hitAtIndex !== -1) {
             player2Hits.push(attemptdata);
-            // debugger
             game[1].deployment.splice(hitAtIndex, 1);
             game[1].hits = player2Hits;
+            console.log("Player 2 Hits: " + player2Hits + "=" + game[1].hits);
             io.emit("turn player1", game);
         } else {
             player1Fails.push(attemptdata);
@@ -55,9 +55,9 @@ io.on('connection', function(socket) {
         console.log("Server side attempt: " + attemptdata + " Hit index: " + hitAtIndex);
         if (hitAtIndex !== -1) {
             player1Hits.push(attemptdata);
-            // debugger
             game[0].deployment.splice(hitAtIndex, 1);
-            game[0].hits = player2Hits;
+            game[0].hits = player1Hits;
+            console.log("Player 1 Hits: " + player1Hits + "=" + game[0].hits);
             io.emit("turn player2", game);
         } else {
             player2Fails.push(attemptdata);
@@ -66,11 +66,11 @@ io.on('connection', function(socket) {
 
     });
 
-    socket.on("end player1", () => {
+    socket.on("end player1", (attemptdata) => {
         io.emit("turn player2", game);
     });
 
-    socket.on("end player2", () => {
+    socket.on("end player2", (attemptdata) => {
         io.emit("turn player1", game);
     });
 
