@@ -22,7 +22,7 @@ $(function() {
 
     // determine start of game
     socket.on("start game", game => {
-        $(".start").text("Players: " + game[0].player + " and " + game[1].player);
+        $(".start").text("Players: " + game[0].player + " and " + game[1].player + ". Follow the prompts.");
         $(".messages").text("To place your ships, first select the right number of tiles, enter the matching letters and then click submit.");
         $(".selection").append("<button type='submit' class='btn btn-danger'>Submit Ships</button");
         drawGrid();
@@ -42,8 +42,6 @@ $(function() {
 
         ships = flatten(ships);
 
-
-        console.log("Ships:" + ships + " at an index " + ships[1]);
         socket.emit("ships submitted", ships, player);
         $('.selection').empty();
         $('.messages').empty();
@@ -51,7 +49,6 @@ $(function() {
 
     // Player 1's turn
     socket.on('turn player1', game => {
-
         // if player 1
         if (game[0].player === player) {
             myTurn = true;
@@ -70,7 +67,7 @@ $(function() {
                 el.addEventListener("dblclick", dblclickHandler1);
             });
 
-            $(".messages").text("Your turn. Double-click to hit.");
+            $(".messages").text("Your turn " + player + ". Double-click to hit.");
         } else {
             // if player 2
             if (game[1].hits !== undefined) {
@@ -103,7 +100,7 @@ $(function() {
                 el.addEventListener("dblclick", dblclickHandler2);
             });
 
-            $(".messages").text("Your turn. Double-click to hit.");
+            $(".messages").text("Your turn " + player + ". Double-click to hit.");
         } else {
             // if player 1
             if (game[0].hits !== undefined) {
@@ -121,11 +118,18 @@ $(function() {
         if (game[0].player === player) {
             myTurn = false;
             attemptdata = "#" + attemptdata;
+            $(attemptdata).css("background", "blue");
+        }
+        // if player 2 
+        if (game[1].player === player) {
+            myTurn = true;
+            attemptdata = "#" + attemptdata;
             $(attemptdata).css("background", "orange");
-        } 
+        }
 
-        $(".messages").text("Player 2's Turn");
-        socket.emit("end player1",attemptdata);
+
+        $(".messages").text(game[1].player + " turn.");
+        socket.emit("end player1", attemptdata);
 
     });
 
@@ -133,12 +137,41 @@ $(function() {
         if (game[1].player === player) {
             myTurn = false;
             attemptdata = "#" + attemptdata;
+            $(attemptdata).css("background", "blue");
+        }
+
+        // if player 1 
+        if (game[0].player === player) {
+            myTurn = true;
+            attemptdata = "#" + attemptdata;
             $(attemptdata).css("background", "orange");
-        } 
+        }
 
-        $(".messages").text("Player 1's Turn");
-        socket.emit("end player2",attemptdata);
+        $(".messages").text(game[0].player + " turn.");
+        socket.emit("end player2", attemptdata);
 
+    });
+
+    socket.on("player1 wins", game => {
+        $(".messages").text(game[0].player + " wins!");
+        $(".selection").append("<button class='btn btn-danger'>Restart Game</button>");
+        $(".selection").on('click', () => {
+            document.location.reload(true);
+        });
+        Array.prototype.slice.call($tiles).forEach(el => {
+            el.removeEventListener("dblclick", dblclickHandler1);
+        });
+    });
+
+    socket.on("player2 wins", game => {
+        $(".messages").text(game[1].player + " wins!");
+        $(".selection").append("<button class='btn btn-danger'>Restart Game</button>");
+        $(".selection").on('click', () => {
+            document.location.reload(true);
+        });
+        Array.prototype.slice.call($tiles).forEach(el => {
+            el.removeEventListener("dblclick", dblclickHandler1);
+        });
     });
 
 
